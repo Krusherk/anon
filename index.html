@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Feedback Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Animated particles */
+        .particle {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px) scale(0); opacity: 0; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 20px;
+            animation: fadeInDown 1s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 72px;
+            font-weight: 900;
+            background: linear-gradient(45deg, #fff, #f0f0f0, #fff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease infinite;
+            text-shadow: 0 0 80px rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        .feedback-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease 0.3s both;
+            transition: all 0.3s ease;
+        }
+
+        .feedback-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 2px solid rgba(255, 193, 7, 0.5);
+            border-radius: 15px;
+            padding: 15px;
+            color: #fff;
+            margin-bottom: 20px;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            color: #fff;
+            font-size: 18px;
+            resize: none;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .char-count {
+            text-align: right;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .submit-btn:hover:before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .submit-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .feed-header {
+            color: #fff;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .message-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.5s ease;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .message-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .message-card:hover:before {
+            left: 100%;
+        }
+
+        .message-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .message-author {
+            color: #fff;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .message-time {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .message-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px;
+        }
+
+        /* Floating orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb1 {
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 105, 180, 0.3);
+            top: 10%;
+            left: 10%;
+            animation: floatOrb 20s ease-in-out infinite;
+        }
+
+        .orb2 {
+            width: 400px;
+            height: 400px;
+            background: rgba(64, 224, 208, 0.3);
+            bottom: 10%;
+            right: 10%;
+            animation: floatOrb 25s ease-in-out infinite reverse;
+        }
+
+        .orb3 {
+            width: 350px;
+            height: 350px;
+            background: rgba(255, 215, 0, 0.3);
+            top: 50%;
+            left: 50%;
+            animation: floatOrb 30s ease-in-out infinite;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(100px, -100px) scale(1.1); }
+            66% { transform: translate(-100px, 100px) scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating orbs -->
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">✨ Anonymous Feedback</div>
+            <div class="subtitle">Share your thoughts. Stay anonymous. Make an impact.</div>
+        </div>
+
+        <div class="feedback-box">
+            <div class="warning" id="warning">
+                ⚠️ Configure Firebase Realtime Database to enable real-time functionality
+            </div>
+            <textarea 
+                id="feedbackInput" 
+                placeholder="Type your anonymous feedback here... Be honest, be kind."
+                maxlength="500"
+            ></textarea>
+            <div class="char-count">
+                <span id="charCount">0</span> / 500
+            </div>
+            <button class="submit-btn" id="submitBtn">
+                <span>🚀 Send Anonymously</span>
+            </button>
+        </div>
+
+        <div class="feed-header">💬 Live Feedback Feed</div>
+        <div id="messagesFeed"></div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvLa3o2rt6Q579Pxgg9m5BkRvbcXSlry8",
+            authDomain: "anon-c58e6.firebaseapp.com",
+            databaseURL: "https://anon-c58e6-default-rtdb.firebaseio.com",
+            projectId: "anon-c58e6",
+            storageBucket: "anon-c58e6.firebasestorage.app",
+            messagingSenderId: "204304115029",
+            appId: "1:204304115029:web:eaf14145ffc2fbe6177bdc",
+            measurementId: "G-G160CP408N"
+        };
+
+        let database = null;
+        let messagesData = [];
+
+        // Initialize Firebase
+        function initFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                database = getDatabase(app);
+                document.getElementById('warning').style.display = 'none';
+                
+                // Listen for real-time updates
+                const feedbackRef = ref(database, 'feedback');
+                const feedbackQuery = query(feedbackRef, orderByChild('timestamp'), limitToLast(50));
+                
+                onValue(feedbackQuery, (snapshot) => {
+                    messagesData = [];
+                    snapshot.forEach((childSnapshot) => {
+                        messagesData.push({
+                            id: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                    messagesData.reverse(); // Show newest first
+                    renderMessages();
+                });
+
+            } catch (error) {
+                console.error('Firebase init error:', error);
+            }
+        }
+
+        // Render all messages
+        function renderMessages() {
+            const feed = document.getElementById('messagesFeed');
+            
+            if (messagesData.length === 0) {
+                feed.innerHTML = '<div class="empty-state">No feedback yet. Be the first to share! 🌟</div>';
+                return;
+            }
+
+            feed.innerHTML = messagesData.map(msg => createMessageHTML(msg)).join('');
+            animateMessages();
+        }
+
+        // Create message HTML
+        function createMessageHTML(msg) {
+            const time = formatTime(msg.timestamp);
+            return `
+                <div class="message-card">
+                    <div class="message-header">
+                        <div class="message-author">Anonymous</div>
+                        <div class="message-time">${time}</div>
+                    </div>
+                    <div class="message-text">${escapeHtml(msg.text)}</div>
+                </div>
+            `;
+        }
+
+        // Format timestamp
+        function formatTime(timestamp) {
+            if (!timestamp) return 'Just now';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return `${Math.floor(diff / 86400)}d ago`;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Animate messages with GSAP
+        function animateMessages() {
+            gsap.from('.message-card', {
+                duration: 0.5,
+                y: 50,
+                opacity: 0,
+                stagger: 0.1,
+                ease: 'power2.out'
+            });
+        }
+
+        // Handle feedback submission
+        document.getElementById('submitBtn').addEventListener('click', async function() {
+            const input = document.getElementById('feedbackInput');
+            const text = input.value.trim();
+
+            if (!text || !database) return;
+
+            this.disabled = true;
+            this.querySelector('span').textContent = '✈️ Sending...';
+
+            try {
+                const feedbackRef = ref(database, 'feedback');
+                await push(feedbackRef, {
+                    text: text,
+                    timestamp: Date.now()
+                });
+
+                input.value = '';
+                document.getElementById('charCount').textContent = '0';
+                
+                // Success animation
+                gsap.to(this, {
+                    scale: 1.1,
+                    duration: 0.2,
+                    yoyo: true,
+                    repeat: 1
+                });
+
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                alert('Error submitting feedback. Please check your Firebase configuration.');
+            }
+
+            this.disabled = false;
+            this.querySelector('span').textContent = '🚀 Send Anonymously';
+        });
+
+        // Character counter
+        document.getElementById('feedbackInput').addEventListener('input', function(e) {
+            document.getElementById('charCount').textContent = e.target.value.length;
+        });
+
+        // Create floating particles
+        function createParticles() {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Initialize
+        initFirebase();
+        createParticles();
+    </script>
+</body>
+</html>
