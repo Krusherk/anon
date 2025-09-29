@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anonymous Feedback Hub</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -27,7 +28,6 @@
             50% { background-position: 100% 50%; }
         }
 
-        /* Animated particles */
         .particle {
             position: fixed;
             width: 10px;
@@ -60,14 +60,8 @@
         }
 
         @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .logo {
@@ -112,14 +106,8 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .warning {
@@ -222,6 +210,38 @@
             z-index: 1;
         }
 
+        .tabs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .tab {
+            padding: 15px 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
         .feed-header {
             color: #fff;
             font-size: 36px;
@@ -239,7 +259,6 @@
             margin-bottom: 20px;
             border: 2px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            animation: slideIn 0.5s ease;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -265,15 +284,22 @@
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
         }
 
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+        .message-card.top-comment {
+            border-color: rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .top-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
         }
 
         .message-header {
@@ -298,6 +324,52 @@
             color: rgba(255, 255, 255, 0.9);
             font-size: 18px;
             line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .action-btn.liked {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+
+        .action-btn.disliked {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: rgba(244, 67, 54, 0.5);
+        }
+
+        .share-btn {
+            margin-left: auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+
+        .share-btn:hover {
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
         }
 
         .empty-state {
@@ -307,7 +379,6 @@
             font-size: 20px;
         }
 
-        /* Floating orbs */
         .orb {
             position: fixed;
             border-radius: 50%;
@@ -349,10 +420,93 @@
             33% { transform: translate(100px, -100px) scale(1.1); }
             66% { transform: translate(-100px, 100px) scale(0.9); }
         }
+
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .share-modal.active {
+            display: flex;
+        }
+
+        .share-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .share-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            border-radius: 20px;
+            margin: 20px 0;
+            color: #fff;
+        }
+
+        .share-preview-text {
+            font-size: 24px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .share-preview-logo {
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .share-action-btn {
+            padding: 15px 30px;
+            border-radius: 15px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 <body>
-    <!-- Floating orbs -->
     <div class="orb orb1"></div>
     <div class="orb orb2"></div>
     <div class="orb orb3"></div>
@@ -364,7 +518,7 @@
         </div>
 
         <div class="feedback-box">
-            <div class="warning" id="warning">
+            <div class="warning" id="warning" style="display: none;">
                 ⚠️ Configure Firebase Realtime Database to enable real-time functionality
             </div>
             <textarea 
@@ -380,16 +534,32 @@
             </button>
         </div>
 
-        <div class="feed-header">💬 Live Feedback Feed</div>
+        <div class="tabs">
+            <div class="tab active" data-tab="top">🔥 Top Comments</div>
+            <div class="tab" data-tab="recent">⚡ Recent</div>
+        </div>
+
         <div id="messagesFeed"></div>
     </div>
 
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+    <div class="share-modal" id="shareModal">
+        <div class="share-content">
+            <h2 style="color: #fff; margin-bottom: 20px;">Share to X (Twitter)</h2>
+            <div class="share-preview" id="sharePreview">
+                <div class="share-preview-text" id="sharePreviewText"></div>
+                <div class="share-preview-logo">✨ Anonymous Feedback Hub</div>
+            </div>
+            <div class="share-buttons">
+                <button class="share-action-btn download-btn" id="downloadBtn">📥 Download Image</button>
+                <button class="share-action-btn close-btn" id="closeModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
 
-        // Your Firebase configuration
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast, update, get } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyBvLa3o2rt6Q579Pxgg9m5BkRvbcXSlry8",
             authDomain: "anon-c58e6.firebaseapp.com",
@@ -402,29 +572,30 @@
         };
 
         let database = null;
-        let messagesData = [];
+        let allMessages = [];
+        let currentTab = 'top';
+        const userVotes = {}; // Track user votes in memory
 
         // Initialize Firebase
         function initFirebase() {
             try {
                 const app = initializeApp(firebaseConfig);
                 database = getDatabase(app);
-                document.getElementById('warning').style.display = 'none';
                 
-                // Listen for real-time updates
                 const feedbackRef = ref(database, 'feedback');
-                const feedbackQuery = query(feedbackRef, orderByChild('timestamp'), limitToLast(50));
                 
-                onValue(feedbackQuery, (snapshot) => {
-                    messagesData = [];
+                onValue(feedbackRef, (snapshot) => {
+                    allMessages = [];
                     snapshot.forEach((childSnapshot) => {
-                        messagesData.push({
+                        allMessages.push({
                             id: childSnapshot.key,
                             ...childSnapshot.val()
                         });
                     });
-                    messagesData.reverse(); // Show newest first
                     renderMessages();
+                }, {
+                    // This ensures we get updates immediately
+                    onlyOnce: false
                 });
 
             } catch (error) {
@@ -432,65 +603,129 @@
             }
         }
 
-        // Render all messages
         function renderMessages() {
             const feed = document.getElementById('messagesFeed');
             
-            if (messagesData.length === 0) {
+            let messagesToShow = [...allMessages];
+            
+            if (currentTab === 'top') {
+                messagesToShow.sort((a, b) => {
+                    const aScore = (a.likes || 0) - (a.dislikes || 0);
+                    const bScore = (b.likes || 0) - (b.dislikes || 0);
+                    return bScore - aScore;
+                });
+            } else {
+                messagesToShow.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            }
+
+            if (messagesToShow.length === 0) {
                 feed.innerHTML = '<div class="empty-state">No feedback yet. Be the first to share! 🌟</div>';
                 return;
             }
 
-            feed.innerHTML = messagesData.map(msg => createMessageHTML(msg)).join('');
-            animateMessages();
+            feed.innerHTML = messagesToShow.map((msg, index) => createMessageHTML(msg, index < 3 && currentTab === 'top')).join('');
         }
 
-        // Create message HTML
-        function createMessageHTML(msg) {
+        function createMessageHTML(msg, isTop) {
             const time = formatTime(msg.timestamp);
+            const likes = msg.likes || 0;
+            const dislikes = msg.dislikes || 0;
+            const score = likes - dislikes;
+            const userVote = userVotes[msg.id] || null;
+
             return `
-                <div class="message-card">
+                <div class="message-card ${isTop ? 'top-comment' : ''}" data-id="${msg.id}">
+                    ${isTop ? '<div class="top-badge">🏆 TOP</div>' : ''}
                     <div class="message-header">
                         <div class="message-author">Anonymous</div>
                         <div class="message-time">${time}</div>
                     </div>
                     <div class="message-text">${escapeHtml(msg.text)}</div>
+                    <div class="message-actions">
+                        <button class="action-btn ${userVote === 'like' ? 'liked' : ''}" onclick="window.handleVote('${msg.id}', 'like')">
+                            👍 ${likes}
+                        </button>
+                        <button class="action-btn ${userVote === 'dislike' ? 'disliked' : ''}" onclick="window.handleVote('${msg.id}', 'dislike')">
+                            👎 ${dislikes}
+                        </button>
+                        <button class="action-btn share-btn" onclick="window.openShareModal('${msg.id}', \`${escapeHtml(msg.text).replace(/`/g, '\\`')}\`)">
+                            📤 Share
+                        </button>
+                    </div>
                 </div>
             `;
         }
 
-        // Format timestamp
-        function formatTime(timestamp) {
-            if (!timestamp) return 'Just now';
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diff = Math.floor((now - date) / 1000);
+        window.handleVote = async function(messageId, voteType) {
+            if (!database) return;
 
-            if (diff < 60) return 'Just now';
-            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-            return `${Math.floor(diff / 86400)}d ago`;
-        }
+            const currentVote = userVotes[messageId];
+            const messageRef = ref(database, `feedback/${messageId}`);
+            
+            try {
+                const snapshot = await get(messageRef);
+                const data = snapshot.val() || {};
+                let likes = data.likes || 0;
+                let dislikes = data.dislikes || 0;
 
-        // Escape HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+                if (currentVote === voteType) {
+                    // Remove vote
+                    if (voteType === 'like') likes = Math.max(0, likes - 1);
+                    else dislikes = Math.max(0, dislikes - 1);
+                    delete userVotes[messageId];
+                } else {
+                    // Change or add vote
+                    if (currentVote === 'like') likes = Math.max(0, likes - 1);
+                    if (currentVote === 'dislike') dislikes = Math.max(0, dislikes - 1);
+                    
+                    if (voteType === 'like') likes++;
+                    else dislikes++;
+                    
+                    userVotes[messageId] = voteType;
+                }
 
-        // Animate messages with GSAP
-        function animateMessages() {
-            gsap.from('.message-card', {
-                duration: 0.5,
-                y: 50,
-                opacity: 0,
-                stagger: 0.1,
-                ease: 'power2.out'
-            });
-        }
+                await update(messageRef, { likes, dislikes });
+            } catch (error) {
+                console.error('Error voting:', error);
+            }
+        };
 
-        // Handle feedback submission
+        window.openShareModal = function(messageId, text) {
+            document.getElementById('sharePreviewText').textContent = text;
+            document.getElementById('shareModal').classList.add('active');
+            
+            // Store current message for download
+            window.currentShareText = text;
+        };
+
+        document.getElementById('downloadBtn').addEventListener('click', async function() {
+            const preview = document.getElementById('sharePreview');
+            
+            try {
+                const canvas = await html2canvas(preview, {
+                    backgroundColor: null,
+                    scale: 2
+                });
+                
+                const link = document.createElement('a');
+                link.download = 'feedback-share.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            } catch (error) {
+                console.error('Error generating image:', error);
+            }
+        });
+
+        document.getElementById('closeModalBtn').addEventListener('click', function() {
+            document.getElementById('shareModal').classList.remove('active');
+        });
+
+        document.getElementById('shareModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+
         document.getElementById('submitBtn').addEventListener('click', async function() {
             const input = document.getElementById('feedbackInput');
             const text = input.value.trim();
@@ -504,13 +739,14 @@
                 const feedbackRef = ref(database, 'feedback');
                 await push(feedbackRef, {
                     text: text,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    likes: 0,
+                    dislikes: 0
                 });
 
                 input.value = '';
                 document.getElementById('charCount').textContent = '0';
                 
-                // Success animation
                 gsap.to(this, {
                     scale: 1.1,
                     duration: 0.2,
@@ -520,19 +756,44 @@
 
             } catch (error) {
                 console.error('Error submitting feedback:', error);
-                alert('Error submitting feedback. Please check your Firebase configuration.');
+                alert('Error submitting feedback. Please try again.');
             }
 
             this.disabled = false;
             this.querySelector('span').textContent = '🚀 Send Anonymously';
         });
 
-        // Character counter
         document.getElementById('feedbackInput').addEventListener('input', function(e) {
             document.getElementById('charCount').textContent = e.target.value.length;
         });
 
-        // Create floating particles
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentTab = this.dataset.tab;
+                renderMessages();
+            });
+        });
+
+        function formatTime(timestamp) {
+            if (!timestamp) return 'Just now';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return `${Math.floor(diff / 86400)}d ago`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function createParticles() {
             for (let i = 0; i < 20; i++) {
                 const particle = document.createElement('div');
@@ -544,7 +805,6 @@
             }
         }
 
-        // Initialize
         initFirebase();
         createParticles();
     </script>
