@@ -749,19 +749,24 @@
         .close-btn:hover {
             background: rgba(255, 255, 255, 0.2);
         }
-.credit {
-  margin-top: 10px;
+footer.credit {
+  position: fixed;   /* sticks it at the bottom */
+  bottom: 0;
+  left: 0;
+  width: 100%;       /* full width */
   text-align: center;
   font-size: 16px;
   font-weight: 600;
   color: #fff;       /* white text */
+  padding: 10px 0;
+  background: transparent; /* you can change to black/gray if you want */
 }
-.credit a {
-  color: #3b82f6;    /* blue links */
-  font-weight: 700;  
+footer.credit a {
+  color: #3b82f6;   /* blue links */
+  font-weight: 700;
   text-decoration: none;
 }
-.credit a:hover {
+footer.credit a:hover {
   text-decoration: underline;
 }
 
@@ -781,12 +786,13 @@
             <div class="subtitle">Want to give feedback like Big Abdul? Share your brutal honest feedback about Monad</div>
         </div>
         
-<p class="credit">
+<footer class="credit">
   Developed by
   <a href="https://x.com/0xqowiyy" target="_blank" rel="noopener noreferrer">Crack</a>, 
   <a href="https://x.com/cloud9_5FM" target="_blank" rel="noopener noreferrer">Augustine</a>, 
-  <a href="https://x.com/ZamooreFavour" target="_blank" rel="noopener noreferrer">Idarastar</a>
-</p>
+  <a href="https://x.com/ZamooreFavour" target="_blank" rel="noopener noreferrer">Idarastar</a>, 
+  <a href="https://x.com/GbiayeB" target="_blank" rel="noopener noreferrer">Barnabas</a>
+</footer>
 
         <div class="feedback-box">
             <div class="warning" id="warning" style="display: none;">
