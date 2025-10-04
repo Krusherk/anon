@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monad Proveys - Nomination</title>
+    <title>Monad Proveys - Main</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -88,6 +88,72 @@
             font-size: 1.2em;
             color: #a0a0a0;
             font-weight: 500;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+
+        .nav-pills {
+            background: rgba(20, 20, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 40px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #a0a0a0;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff06f4, #c913b8);
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 40px;
+        }
+
+        .nav-btn:hover::before {
+            opacity: 0.1;
+        }
+
+        .nav-btn.active {
+            color: #fff;
+        }
+
+        .nav-btn.active::before {
+            opacity: 1;
+        }
+
+        .nav-btn span {
+            position: relative;
+            z-index: 1;
         }
 
         .categories-grid {
@@ -272,6 +338,10 @@
             .categories-grid {
                 grid-template-columns: 1fr;
             }
+
+            .nav-pills {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
@@ -282,7 +352,21 @@
     <div class="container">
         <div class="header">
             <h1>THE MONAD PROVEYS</h1>
-            <p>Nominate the best in the community</p>
+            <p>Vote for the best in the community</p>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-pills">
+                <a href="nominate.html" class="nav-btn active">
+                    <span>✨ Nominate</span>
+                </a>
+                <a href="vote.html" class="nav-btn">
+                    <span>🗳️ Vote</span>
+                </a>
+                <a href="results.html" class="nav-btn">
+                    <span>📊 Results</span>
+                </a>
+            </div>
         </div>
 
         <div class="categories-grid" id="nomination-grid"></div>
