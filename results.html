@@ -376,3 +376,45 @@
 
         async function loadResultsPage() {
             const grid = document.getElementById('results-grid');
+            grid.innerHTML = '';
+
+            for (const category of categories) {
+                const q = query(collection(db, 'nominations'), 
+                    where('category', '==', category), 
+                    where('status', '==', 'approved'));
+                const snapshot = await getDocs(q);
+                
+                const nominees = [];
+                snapshot.forEach(doc => {
+                    nominees.push({ id: doc.id, ...doc.data() });
+                });
+
+                nominees.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+
+                if (nominees.length > 0) {
+                    const card = document.createElement('div');
+                    card.className = 'category-card';
+                    
+                    let nomineesList = '';
+                    nominees.forEach((nom, idx) => {
+                        const isWinner = idx === 0 && (nom.votes || 0) > 0;
+                        nomineesList += `
+                            <div class="nominee-item ${isWinner ? 'winner' : ''}">
+                                <span class="nominee-name">${nom.nominee}</span>
+                                <span class="vote-count">${nom.votes || 0} votes</span>
+                            </div>
+                        `;
+                    });
+
+                    card.innerHTML = `
+                        <div class="category-header">${category}</div>
+                        <div class="category-body">
+                            <div class="nominees-list">${nomineesList}</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                }
+            }
+        }
+
+        loadResultsPage();
