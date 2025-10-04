@@ -260,18 +260,15 @@
             box-shadow: 0 0 20px rgba(255, 6, 244, 0.3);
         }
 
-        .nominee-item.winner::before {
-            content: '👑';
-            position: absolute;
-            left: -10px;
-            top: -10px;
-            font-size: 1.5em;
+        .nominee-item.winner .nominee-name::before {
+            content: '👑 ';
+            font-size: 1.2em;
             animation: bounce 2s infinite;
         }
 
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-5px); }
         }
 
         .nominee-name {
@@ -311,3 +308,71 @@
     </style>
 </head>
 <body>
+    <div class="bg-animation"></div>
+    <div class="grain"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>THE MONAD PROVEYS</h1>
+            <p>Live voting results</p>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-pills">
+                <a href="index.html" class="nav-btn">
+                    <span>✨ Nominate</span>
+                </a>
+                <a href="vote.html" class="nav-btn">
+                    <span>🗳️ Vote</span>
+                </a>
+                <a href="results.html" class="nav-btn active">
+                    <span>📊 Results</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="categories-grid" id="results-grid"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCl-TKiuRRfAB_a2x130_cCPtxrLlXo3BU",
+            authDomain: "voterrr-239ec.firebaseapp.com",
+            projectId: "voterrr-239ec",
+            storageBucket: "voterrr-239ec.firebasestorage.app",
+            messagingSenderId: "1077550121311",
+            appId: "1:1077550121311:web:8f255791d73ee17cf676ea",
+            measurementId: "G-FGM8WS39D9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const categories = [
+            "Best shit poster",
+            "Best threador",
+            "Best 2D/3D Artist",
+            "Best animator",
+            "Best Karaoké",
+            "Ironnad",
+            "Most caring Nad",
+            "Best moderator",
+            "Best Nad couple",
+            "Most hated Nad",
+            "Best gamer",
+            "Farmer of the year",
+            "Quant of the year",
+            "Dev of the year",
+            "Founder of the year",
+            "Space host of the year",
+            "Best defi detective",
+            "Nad that are most likely to leave monad after mainnet",
+            "Nad of the year",
+            "Best Collab manager"
+        ];
+
+        async function loadResultsPage() {
+            const grid = document.getElementById('results-grid');
