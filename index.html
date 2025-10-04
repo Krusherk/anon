@@ -412,6 +412,42 @@
             "Best Collab manager"
         ];
 
+        async function submitNomination(index) {
+            const input = document.getElementById(`nom-${index}`);
+            const nominee = input.value.trim();
+            const msgDiv = document.getElementById(`msg-${index}`);
+            const btn = document.querySelector(`[data-index="${index}"]`);
+            
+            if (!nominee) {
+                msgDiv.innerHTML = '<div class="error-msg">Please enter a name</div>';
+                setTimeout(() => msgDiv.innerHTML = '', 3000);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Submitting...</span>';
+
+            try {
+                await addDoc(collection(db, 'nominations'), {
+                    category: categories[index],
+                    nominee: nominee,
+                    status: 'pending',
+                    timestamp: new Date()
+                });
+
+                input.value = '';
+                msgDiv.innerHTML = '<div class="success-msg">✓ Nomination submitted successfully!</div>';
+                btn.innerHTML = '<span>Submit Nomination</span>';
+                btn.disabled = false;
+                setTimeout(() => msgDiv.innerHTML = '', 3000);
+            } catch (error) {
+                msgDiv.innerHTML = '<div class="error-msg">Error submitting nomination</div>';
+                btn.innerHTML = '<span>Submit Nomination</span>';
+                btn.disabled = false;
+                console.error(error);
+            }
+        }
+
         function createNominationPage() {
             const grid = document.getElementById('nomination-grid');
             grid.innerHTML = '';
@@ -430,41 +466,16 @@
                 grid.appendChild(card);
             });
 
-            // Add event listeners to all buttons
-            document.querySelectorAll('.submit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = this.getAttribute('data-index');
-                    submitNomination(index);
+            // Add event listeners to all buttons after they're created
+            setTimeout(() => {
+                document.querySelectorAll('.submit-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const index = parseInt(this.getAttribute('data-index'));
+                        submitNomination(index);
+                    });
                 });
-            });
-        }
-
-        async function submitNomination(index) {
-            const input = document.getElementById(`nom-${index}`);
-            const nominee = input.value.trim();
-            const msgDiv = document.getElementById(`msg-${index}`);
-            
-            if (!nominee) {
-                msgDiv.innerHTML = '<div class="error-msg">Please enter a name</div>';
-                setTimeout(() => msgDiv.innerHTML = '', 3000);
-                return;
-            }
-
-            try {
-                await addDoc(collection(db, 'nominations'), {
-                    category: categories[index],
-                    nominee: nominee,
-                    status: 'pending',
-                    timestamp: new Date()
-                });
-
-                input.value = '';
-                msgDiv.innerHTML = '<div class="success-msg">✓ Nomination submitted successfully!</div>';
-                setTimeout(() => msgDiv.innerHTML = '', 3000);
-            } catch (error) {
-                msgDiv.innerHTML = '<div class="error-msg">Error submitting nomination</div>';
-                console.error(error);
-            }
+            }, 100);
         }
 
         createNominationPage();
