@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monad Proveys Voting</title>
+    <title>Monad Proveys - Nomination</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -22,7 +22,6 @@
             overflow-x: hidden;
         }
 
-        /* Animated Background */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -62,7 +61,6 @@
             z-index: 2;
         }
 
-        /* Header */
         .header {
             text-align: center;
             margin-bottom: 60px;
@@ -92,86 +90,6 @@
             font-weight: 500;
         }
 
-        /* Navigation */
-        .nav-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 50px;
-            position: sticky;
-            top: 20px;
-            z-index: 100;
-        }
-
-        .nav-pills {
-            background: rgba(20, 20, 30, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            padding: 8px;
-            display: flex;
-            gap: 8px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        .nav-btn {
-            background: transparent;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 40px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: #a0a0a0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #ff06f4, #c913b8);
-            opacity: 0;
-            transition: opacity 0.3s;
-            border-radius: 40px;
-        }
-
-        .nav-btn:hover::before {
-            opacity: 0.1;
-        }
-
-        .nav-btn.active {
-            color: #fff;
-        }
-
-        .nav-btn.active::before {
-            opacity: 1;
-        }
-
-        .nav-btn span {
-            position: relative;
-            z-index: 1;
-        }
-
-        .page {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        /* Categories Grid */
         .categories-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
@@ -321,218 +239,6 @@
             cursor: not-allowed;
         }
 
-        /* Nominees List */
-        .nominees-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .nominee-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 18px 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-
-        .nominee-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 6, 244, 0.2), rgba(139, 31, 201, 0.2));
-            border-radius: 16px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .nominee-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 6, 244, 0.3);
-            transform: translateX(4px);
-        }
-
-        .nominee-item.selected {
-            background: rgba(255, 6, 244, 0.15);
-            border-color: #ff06f4;
-            box-shadow: 0 0 20px rgba(255, 6, 244, 0.3);
-        }
-
-        .nominee-item.selected::before {
-            opacity: 1;
-        }
-
-        .nominee-radio {
-            width: 24px;
-            height: 24px;
-            accent-color: #ff06f4;
-            cursor: pointer;
-            position: relative;
-            z-index: 1;
-        }
-
-        .nominee-name {
-            flex: 1;
-            font-weight: 600;
-            font-size: 1.05em;
-            color: #e0e0e0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .vote-count {
-            background: linear-gradient(135deg, #ff06f4, #8b1fc9);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.95em;
-            position: relative;
-            z-index: 1;
-            box-shadow: 0 4px 12px rgba(255, 6, 244, 0.3);
-        }
-
-        /* Admin Login */
-        .admin-login {
-            max-width: 500px;
-            margin: 100px auto;
-            background: rgba(20, 20, 30, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 50px;
-            border-radius: 32px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-        }
-
-        .admin-login h2 {
-            background: linear-gradient(135deg, #fff 0%, #ff06f4 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 30px;
-            text-align: center;
-            font-size: 2.5em;
-            font-weight: 800;
-        }
-
-        .admin-login input {
-            width: 100%;
-            padding: 18px 24px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            font-size: 1.1em;
-            margin-bottom: 24px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            font-weight: 500;
-        }
-
-        .admin-login input:focus {
-            outline: none;
-            border-color: #ff06f4;
-            box-shadow: 0 0 0 4px rgba(255, 6, 244, 0.1);
-        }
-
-        /* Pending Nominations */
-        .pending-nominations {
-            background: rgba(20, 20, 30, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 40px;
-            margin-bottom: 30px;
-        }
-
-        .pending-nominations h2 {
-            background: linear-gradient(135deg, #fff 0%, #ff06f4 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 30px;
-            font-size: 2em;
-            font-weight: 800;
-        }
-
-        .pending-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 24px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            margin-bottom: 16px;
-            transition: all 0.3s;
-        }
-
-        .pending-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 6, 244, 0.3);
-            transform: translateX(4px);
-        }
-
-        .pending-info {
-            flex: 1;
-        }
-
-        .pending-category {
-            font-weight: 700;
-            color: #ff06f4;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .pending-nominee {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #e0e0e0;
-        }
-
-        .pending-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .approve-btn, .reject-btn {
-            border: none;
-            padding: 12px 28px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 1em;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .approve-btn {
-            background: linear-gradient(135deg, #4caf50, #2e7d32);
-            color: white;
-        }
-
-        .approve-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
-        }
-
-        .reject-btn {
-            background: linear-gradient(135deg, #f44336, #c62828);
-            color: white;
-        }
-
-        .reject-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(244, 67, 54, 0.4);
-        }
-
         .success-msg, .error-msg {
             padding: 18px;
             border-radius: 16px;
@@ -558,53 +264,6 @@
             color: white;
         }
 
-        .logout-btn {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            background: rgba(255, 6, 244, 0.2);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 6, 244, 0.5);
-            color: #fff;
-            padding: 14px 28px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 700;
-            box-shadow: 0 8px 24px rgba(255, 6, 244, 0.3);
-            transition: all 0.3s;
-            z-index: 1000;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 6, 244, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(255, 6, 244, 0.5);
-        }
-
-        .submit-all-container {
-            margin-top: 40px;
-            text-align: center;
-        }
-
-        .submit-all-btn {
-            background: linear-gradient(135deg, #ff06f4 0%, #8b1fc9 100%);
-            color: white;
-            border: none;
-            padding: 20px 60px;
-            border-radius: 50px;
-            font-size: 1.2em;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 20px 40px rgba(255, 6, 244, 0.3);
-            letter-spacing: 0.5px;
-        }
-
-        .submit-all-btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 30px 60px rgba(255, 6, 244, 0.5);
-        }
-
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2.5em;
@@ -612,10 +271,6 @@
             
             .categories-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .nav-pills {
-                flex-wrap: wrap;
             }
         }
     </style>
@@ -627,64 +282,15 @@
     <div class="container">
         <div class="header">
             <h1>THE MONAD PROVEYS</h1>
-            <p>Vote for the best in the community</p>
+            <p>Nominate the best in the community</p>
         </div>
 
-        <div class="nav-container">
-            <div class="nav-pills">
-                <button class="nav-btn active" onclick="showPage('nominate')">
-                    <span>✨ Nominate</span>
-                </button>
-                <button class="nav-btn" onclick="showPage('vote')">
-                    <span>🗳️ Vote</span>
-                </button>
-                <button class="nav-btn" onclick="showPage('results')">
-                    <span>📊 Results</span>
-                </button>
-                <button class="nav-btn" onclick="showPage('admin')">
-                    <span>⚙️ Admin</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Nomination Page -->
-        <div id="nominate-page" class="page active">
-            <div class="categories-grid" id="nomination-grid"></div>
-        </div>
-
-        <!-- Voting Page -->
-        <div id="vote-page" class="page">
-            <div class="categories-grid" id="voting-grid"></div>
-            <div class="submit-all-container">
-                <button class="submit-all-btn" onclick="submitAllVotes()">
-                    <span>SUBMIT ALL VOTES</span>
-                </button>
-                <div id="vote-msg"></div>
-            </div>
-        </div>
-
-        <!-- Results Page -->
-        <div id="results-page" class="page">
-            <div class="categories-grid" id="results-grid"></div>
-        </div>
-
-        <!-- Admin Page -->
-        <div id="admin-page" class="page">
-            <div id="admin-login" class="admin-login">
-                <h2>Admin Access</h2>
-                <input type="password" id="admin-password" placeholder="Enter admin password">
-                <button class="submit-btn" onclick="adminLogin()"><span>Login</span></button>
-            </div>
-            <div id="admin-panel" style="display: none;">
-                <button class="logout-btn" onclick="adminLogout()">Logout</button>
-                <div class="pending-nominations" id="pending-nominations"></div>
-            </div>
-        </div>
+        <div class="categories-grid" id="nomination-grid"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, increment } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCl-TKiuRRfAB_a2x130_cCPtxrLlXo3BU",
@@ -722,22 +328,6 @@
             "Best Collab manager"
         ];
 
-        let isAdmin = false;
-        let userVotes = {};
-
-        window.showPage = function(pageName) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(pageName + '-page').classList.add('active');
-            event.target.closest('.nav-btn').classList.add('active');
-
-            if (pageName === 'vote') loadVotingPage();
-            if (pageName === 'results') loadResultsPage();
-            if (pageName === 'admin' && isAdmin) loadAdminPanel();
-        };
-
-        // Create Nomination Page
         function createNominationPage() {
             const grid = document.getElementById('nomination-grid');
             grid.innerHTML = '';
@@ -749,7 +339,7 @@
                     <div class="category-header">${category}</div>
                     <div class="category-body">
                         <input type="text" class="nomination-input" id="nom-${index}" placeholder="Enter nominee name">
-                        <button class="submit-btn" onclick="submitNomination(${index})"><span>Submit Nomination</span></button>
+                        <button class="submit-btn" onclick="window.submitNomination(${index})"><span>Submit Nomination</span></button>
                         <div id="msg-${index}"></div>
                     </div>
                 `;
@@ -785,72 +375,7 @@
             }
         };
 
-        // Load Voting Page
-        async function loadVotingPage() {
-            const grid = document.getElementById('voting-grid');
-            grid.innerHTML = '';
-
-            for (const category of categories) {
-                const q = query(collection(db, 'nominations'), 
-                    where('category', '==', category), 
-                    where('status', '==', 'approved'));
-                const snapshot = await getDocs(q);
-                
-                const nominees = [];
-                snapshot.forEach(doc => {
-                    nominees.push({ id: doc.id, ...doc.data() });
-                });
-
-                if (nominees.length > 0) {
-                    const card = document.createElement('div');
-                    card.className = 'category-card';
-                    
-                    let nomineesList = '';
-                    nominees.forEach(nom => {
-                        const isSelected = userVotes[category] === nom.id;
-                        nomineesList += `
-                            <div class="nominee-item ${isSelected ? 'selected' : ''}" onclick="selectVote('${category}', '${nom.id}')">
-                                <input type="radio" class="nominee-radio" name="${category}" ${isSelected ? 'checked' : ''}>
-                                <span class="nominee-name">${nom.nominee}</span>
-                            </div>
-                        `;
-                    });
-
-                    card.innerHTML = `
-                        <div class="category-header">${category}</div>
-                        <div class="category-body">
-                            <div class="nominees-list">${nomineesList}</div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                }
-            }
-        }
-
-        window.selectVote = function(category, nomineeId) {
-            userVotes[category] = nomineeId;
-            loadVotingPage();
-        };
-
-        window.submitAllVotes = async function() {
-            const msgDiv = document.getElementById('vote-msg');
-            
-            if (Object.keys(userVotes).length === 0) {
-                msgDiv.innerHTML = '<div class="error-msg" style="margin-top: 20px;">Please select at least one vote</div>';
-                setTimeout(() => msgDiv.innerHTML = '', 3000);
-                return;
-            }
-
-            try {
-                for (const [category, nomineeId] of Object.entries(userVotes)) {
-                    const nomineeRef = doc(db, 'nominations', nomineeId);
-                    await updateDoc(nomineeRef, {
-                        votes: increment(1)
-                    });
-                }
-
-                msgDiv.innerHTML = '<div class="success-msg" style="margin-top: 20px;">Votes submitted successfully!</div>';
-                userVotes = {};
-                setTimeout(() => {
-                    msgDiv.innerHTML = '';
-                    loadVoting
+        createNominationPage();
+    </script>
+</body>
+</html>
