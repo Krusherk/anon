@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monad Proveys - Main</title>
+    <title>Monad Proveys - Nominate</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -352,12 +352,12 @@
     <div class="container">
         <div class="header">
             <h1>THE MONAD PROVEYS</h1>
-            <p>Vote for the best in the community</p>
+            <p>Nominate the best in the community</p>
         </div>
 
         <div class="nav-container">
             <div class="nav-pills">
-                <a href="nominate.html" class="nav-btn active">
+                <a href="index.html" class="nav-btn active">
                     <span>✨ Nominate</span>
                 </a>
                 <a href="vote.html" class="nav-btn">
@@ -423,15 +423,23 @@
                     <div class="category-header">${category}</div>
                     <div class="category-body">
                         <input type="text" class="nomination-input" id="nom-${index}" placeholder="Enter nominee name">
-                        <button class="submit-btn" onclick="window.submitNomination(${index})"><span>Submit Nomination</span></button>
+                        <button class="submit-btn" data-index="${index}"><span>Submit Nomination</span></button>
                         <div id="msg-${index}"></div>
                     </div>
                 `;
                 grid.appendChild(card);
             });
+
+            // Add event listeners to all buttons
+            document.querySelectorAll('.submit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = this.getAttribute('data-index');
+                    submitNomination(index);
+                });
+            });
         }
 
-        window.submitNomination = async function(index) {
+        async function submitNomination(index) {
             const input = document.getElementById(`nom-${index}`);
             const nominee = input.value.trim();
             const msgDiv = document.getElementById(`msg-${index}`);
@@ -451,13 +459,13 @@
                 });
 
                 input.value = '';
-                msgDiv.innerHTML = '<div class="success-msg">Nomination submitted!</div>';
+                msgDiv.innerHTML = '<div class="success-msg">✓ Nomination submitted successfully!</div>';
                 setTimeout(() => msgDiv.innerHTML = '', 3000);
             } catch (error) {
                 msgDiv.innerHTML = '<div class="error-msg">Error submitting nomination</div>';
                 console.error(error);
             }
-        };
+        }
 
         createNominationPage();
     </script>
