@@ -49,7 +49,7 @@
             height: 100%;
             opacity: 0.03;
             pointer-events: none;
-            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)"/%3E%3C/svg%3E');
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulance type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)"/%3E%3C/svg%3E');
             z-index: 1;
         }
 
@@ -295,11 +295,6 @@
             transform: translateY(0);
         }
 
-        .submit-btn span {
-            position: relative;
-            z-index: 1;
-        }
-
         .submit-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -412,20 +407,47 @@
             "Best Collab manager"
         ];
 
+        // Create the nomination page
+        function createNominationPage() {
+            const grid = document.getElementById('nomination-grid');
+            
+            categories.forEach((category, index) => {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.innerHTML = `
+                    <div class="category-header">${category}</div>
+                    <div class="category-body">
+                        <input type="text" class="nomination-input" id="nom-${index}" placeholder="Enter nominee name">
+                        <button class="submit-btn" id="btn-${index}">Submit Nomination</button>
+                        <div id="msg-${index}"></div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Add click handlers after DOM is ready
+            categories.forEach((category, index) => {
+                const btn = document.getElementById(`btn-${index}`);
+                btn.onclick = () => submitNomination(index);
+            });
+        }
+
+        // Submit nomination function
         async function submitNomination(index) {
             const input = document.getElementById(`nom-${index}`);
-            const nominee = input.value.trim();
+            const btn = document.getElementById(`btn-${index}`);
             const msgDiv = document.getElementById(`msg-${index}`);
-            const btn = document.querySelector(`[data-index="${index}"]`);
+            const nominee = input.value.trim();
             
             if (!nominee) {
-                msgDiv.innerHTML = '<div class="error-msg">Please enter a name</div>';
+                msgDiv.innerHTML = '<div class="error-msg">⚠️ Please enter a name</div>';
                 setTimeout(() => msgDiv.innerHTML = '', 3000);
                 return;
             }
 
+            // Disable button
             btn.disabled = true;
-            btn.innerHTML = '<span>Submitting...</span>';
+            btn.textContent = 'Submitting...';
 
             try {
                 await addDoc(collection(db, 'nominations'), {
@@ -437,47 +459,17 @@
 
                 input.value = '';
                 msgDiv.innerHTML = '<div class="success-msg">✓ Nomination submitted successfully!</div>';
-                btn.innerHTML = '<span>Submit Nomination</span>';
-                btn.disabled = false;
                 setTimeout(() => msgDiv.innerHTML = '', 3000);
             } catch (error) {
-                msgDiv.innerHTML = '<div class="error-msg">Error submitting nomination</div>';
-                btn.innerHTML = '<span>Submit Nomination</span>';
+                console.error('Error:', error);
+                msgDiv.innerHTML = '<div class="error-msg">❌ Error: ' + error.message + '</div>';
+            } finally {
                 btn.disabled = false;
-                console.error(error);
+                btn.textContent = 'Submit Nomination';
             }
         }
 
-        function createNominationPage() {
-            const grid = document.getElementById('nomination-grid');
-            grid.innerHTML = '';
-            
-            categories.forEach((category, index) => {
-                const card = document.createElement('div');
-                card.className = 'category-card';
-                card.innerHTML = `
-                    <div class="category-header">${category}</div>
-                    <div class="category-body">
-                        <input type="text" class="nomination-input" id="nom-${index}" placeholder="Enter nominee name">
-                        <button class="submit-btn" data-index="${index}"><span>Submit Nomination</span></button>
-                        <div id="msg-${index}"></div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-
-            // Add event listeners to all buttons after they're created
-            setTimeout(() => {
-                document.querySelectorAll('.submit-btn').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const index = parseInt(this.getAttribute('data-index'));
-                        submitNomination(index);
-                    });
-                });
-            }, 100);
-        }
-
+        // Initialize the page
         createNominationPage();
     </script>
 </body>
