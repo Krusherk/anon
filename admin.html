@@ -289,11 +289,11 @@
         <div id="admin-login" class="admin-login">
             <h2>Admin Access</h2>
             <input type="password" id="admin-password" placeholder="Enter admin password">
-            <button class="submit-btn" onclick="adminLogin()">Login</button>
+            <button class="submit-btn" id="login-btn">Login</button>
         </div>
 
         <div id="admin-panel" style="display: none;">
-            <button class="logout-btn" onclick="adminLogout()">Logout</button>
+            <button class="logout-btn" id="logout-btn">Logout</button>
             <div class="header">
                 <h1>Admin Panel</h1>
             </div>
@@ -303,22 +303,26 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCl-TKiuRRfAB_a2x130_cCPtxrLlXo3BU",
             authDomain: "voterrr-239ec.firebaseapp.com",
+            databaseURL: "https://voterrr-239ec-default-rtdb.firebaseio.com",
             projectId: "voterrr-239ec",
             storageBucket: "voterrr-239ec.firebasestorage.app",
             messagingSenderId: "1077550121311",
-            appId: "1:1077550121311:web:8f255791d73ee17cf676ea",
-            measurementId: "G-FGM8WS39D9"
+            appId: "1:1077550121311:web:ab7a0d149df994eaf676ea",
+            measurementId: "G-SD8M5NXQHY"
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const database = getDatabase(app);
 
-        window.adminLogin = function() {
+        document.getElementById('login-btn').onclick = adminLogin;
+        document.getElementById('logout-btn').onclick = adminLogout;
+
+        function adminLogin() {
             const password = document.getElementById('admin-password').value;
             if (password === 'voteee$1') {
                 document.getElementById('admin-login').style.display = 'none';
@@ -327,74 +331,17 @@
             } else {
                 alert('Invalid password');
             }
-        };
+        }
 
-        window.adminLogout = function() {
+        function adminLogout() {
             document.getElementById('admin-login').style.display = 'block';
             document.getElementById('admin-panel').style.display = 'none';
             document.getElementById('admin-password').value = '';
-        };
-
-        async function loadAdminPanel() {
-            const panel = document.getElementById('pending-nominations');
-            panel.innerHTML = '<h2>Pending Nominations</h2>';
-
-            const q = query(collection(db, 'nominations'), where('status', '==', 'pending'));
-            const snapshot = await getDocs(q);
-
-            if (snapshot.empty) {
-                panel.innerHTML += `
-                    <div class="empty-state">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <p style="font-size: 1.2em;">No pending nominations</p>
-                    </div>
-                `;
-                return;
-            }
-
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const item = document.createElement('div');
-                item.className = 'pending-item';
-                item.innerHTML = `
-                    <div class="pending-info">
-                        <div class="pending-category">${data.category}</div>
-                        <div class="pending-nominee">${data.nominee}</div>
-                    </div>
-                    <div class="pending-actions">
-                        <button class="approve-btn" onclick="window.approveNomination('${docSnap.id}')">✓ Approve</button>
-                        <button class="reject-btn" onclick="window.rejectNomination('${docSnap.id}')">✕ Reject</button>
-                    </div>
-                `;
-                panel.appendChild(item);
-            });
         }
 
-        window.approveNomination = async function(id) {
-            try {
-                const nomineeRef = doc(db, 'nominations', id);
-                await updateDoc(nomineeRef, {
-                    status: 'approved',
-                    votes: 0
-                });
-                loadAdminPanel();
-            } catch (error) {
-                console.error(error);
-                alert('Error approving nomination');
-            }
-        };
+        function loadAdminPanel() {
+            const panel = document.getElementById('pending-nominations');
+            const nominationsRef = ref(database, 'nominations');
 
-        window.rejectNomination = async function(id) {
-            try {
-                await deleteDoc(doc(db, 'nominations', id));
-                loadAdminPanel();
-            } catch (error) {
-                console.error(error);
-                alert('Error rejecting nomination');
-            }
-        };
-    </script>
-</body>
-</html>
+            onValue(nominationsRef, (snapshot) => {
+                panel.innerHTML
