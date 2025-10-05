@@ -336,20 +336,21 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCl-TKiuRRfAB_a2x130_cCPtxrLlXo3BU",
             authDomain: "voterrr-239ec.firebaseapp.com",
+            databaseURL: "https://voterrr-239ec-default-rtdb.firebaseio.com",
             projectId: "voterrr-239ec",
             storageBucket: "voterrr-239ec.firebasestorage.app",
             messagingSenderId: "1077550121311",
-            appId: "1:1077550121311:web:8f255791d73ee17cf676ea",
-            measurementId: "G-FGM8WS39D9"
+            appId: "1:1077550121311:web:ab7a0d149df994eaf676ea",
+            measurementId: "G-SD8M5NXQHY"
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const database = getDatabase(app);
 
         const categories = [
             "Best shit poster",
@@ -374,47 +375,60 @@
             "Best Collab manager"
         ];
 
-        async function loadResultsPage() {
+        function loadResultsPage() {
             const grid = document.getElementById('results-grid');
-            grid.innerHTML = '';
+            const nominationsRef = ref(database, 'nominations');
 
-            for (const category of categories) {
-                const q = query(collection(db, 'nominations'), 
-                    where('category', '==', category), 
-                    where('status', '==', 'approved'));
-                const snapshot = await getDocs(q);
+            onValue(nominationsRef, (snapshot) => {
+                grid.innerHTML = '';
+                const data = snapshot.val();
                 
-                const nominees = [];
-                snapshot.forEach(doc => {
-                    nominees.push({ id: doc.id, ...doc.data() });
-                });
+                if (!data) {
+                    grid.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">No results yet</p>';
+                    return;
+                }
 
-                nominees.sort((a, b) => (b.votes || 0) - (a.votes || 0));
-
-                if (nominees.length > 0) {
-                    const card = document.createElement('div');
-                    card.className = 'category-card';
+                categories.forEach(category => {
+                    const categoryNominees = [];
                     
-                    let nomineesList = '';
-                    nominees.forEach((nom, idx) => {
-                        const isWinner = idx === 0 && (nom.votes || 0) > 0;
-                        nomineesList += `
-                            <div class="nominee-item ${isWinner ? 'winner' : ''}">
-                                <span class="nominee-name">${nom.nominee}</span>
-                                <span class="vote-count">${nom.votes || 0} votes</span>
-                            </div>
-                        `;
+                    Object.keys(data).forEach(key => {
+                        const nomination = data[key];
+                        if (nomination.category === category && nomination.status === 'approved') {
+                            categoryNominees.push({ key, ...nomination });
+                        }
                     });
 
-                    card.innerHTML = `
-                        <div class="category-header">${category}</div>
-                        <div class="category-body">
-                            <div class="nominees-list">${nomineesList}</div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                }
-            }
+                    // Sort by votes (highest first)
+                    categoryNominees.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+
+                    if (categoryNominees.length > 0) {
+                        const card = document.createElement('div');
+                        card.className = 'category-card';
+                        
+                        let nomineesList = '';
+                        categoryNominees.forEach((nom, index) => {
+                            const isWinner = index === 0 && (nom.votes || 0) > 0;
+                            nomineesList += `
+                                <div class="nominee-item ${isWinner ? 'winner' : ''}">
+                                    <span class="nominee-name">${nom.nominee}</span>
+                                    <span class="vote-count">${nom.votes || 0} votes</span>
+                                </div>
+                            `;
+                        });
+
+                        card.innerHTML = `
+                            <div class="category-header">${category}</div>
+                            <div class="category-body">
+                                <div class="nominees-list">${nomineesList}</div>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    }
+                });
+            });
         }
 
         loadResultsPage();
+    </script>
+</body>
+</html>
