@@ -339,9 +339,9 @@
             box-shadow: 0 30px 60px rgba(255, 6, 244, 0.5);
         }
 
-        .submit-all-btn span {
-            position: relative;
-            z-index: 1;
+        .submit-all-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .success-msg, .error-msg {
@@ -411,29 +411,28 @@
         <div class="categories-grid" id="voting-grid"></div>
 
         <div class="submit-all-container">
-            <button class="submit-all-btn" onclick="submitAllVotes()">
-                <span>SUBMIT ALL VOTES</span>
-            </button>
+            <button class="submit-all-btn" id="submit-votes-btn">SUBMIT ALL VOTES</button>
             <div id="vote-msg"></div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, query, where, increment } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+        import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCl-TKiuRRfAB_a2x130_cCPtxrLlXo3BU",
             authDomain: "voterrr-239ec.firebaseapp.com",
+            databaseURL: "https://voterrr-239ec-default-rtdb.firebaseio.com",
             projectId: "voterrr-239ec",
             storageBucket: "voterrr-239ec.firebasestorage.app",
             messagingSenderId: "1077550121311",
-            appId: "1:1077550121311:web:8f255791d73ee17cf676ea",
-            measurementId: "G-FGM8WS39D9"
+            appId: "1:1077550121311:web:ab7a0d149df994eaf676ea",
+            measurementId: "G-SD8M5NXQHY"
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const database = getDatabase(app);
 
         const categories = [
             "Best shit poster",
@@ -459,55 +458,73 @@
         ];
 
         let userVotes = {};
+        let allNominations = {};
 
-        async function loadVotingPage() {
+        function loadVotingPage() {
             const grid = document.getElementById('voting-grid');
-            grid.innerHTML = '';
+            const nominationsRef = ref(database, 'nominations');
 
-            for (const category of categories) {
-                const q = query(collection(db, 'nominations'), 
-                    where('category', '==', category), 
-                    where('status', '==', 'approved'));
-                const snapshot = await getDocs(q);
+            onValue(nominationsRef, (snapshot) => {
+                grid.innerHTML = '';
+                const data = snapshot.val();
                 
-                const nominees = [];
-                snapshot.forEach(doc => {
-                    nominees.push({ id: doc.id, ...doc.data() });
-                });
+                if (!data) {
+                    grid.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">No approved nominations yet</p>';
+                    return;
+                }
 
-                if (nominees.length > 0) {
-                    const card = document.createElement('div');
-                    card.className = 'category-card';
+                allNominations = data;
+
+                categories.forEach(category => {
+                    const categoryNominees = [];
                     
-                    let nomineesList = '';
-                    nominees.forEach(nom => {
-                        const isSelected = userVotes[category] === nom.id;
-                        nomineesList += `
-                            <div class="nominee-item ${isSelected ? 'selected' : ''}" onclick="selectVote('${category}', '${nom.id}')">
-                                <input type="radio" class="nominee-radio" name="${category}" ${isSelected ? 'checked' : ''}>
-                                <span class="nominee-name">${nom.nominee}</span>
-                            </div>
-                        `;
+                    Object.keys(data).forEach(key => {
+                        const nomination = data[key];
+                        if (nomination.category === category && nomination.status === 'approved') {
+                            categoryNominees.push({ key, ...nomination });
+                        }
                     });
 
-                    card.innerHTML = `
-                        <div class="category-header">${category}</div>
-                        <div class="category-body">
-                            <div class="nominees-list">${nomineesList}</div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                }
-            }
+                    if (categoryNominees.length > 0) {
+                        const card = document.createElement('div');
+                        card.className = 'category-card';
+                        
+                        let nomineesList = '';
+                        categoryNominees.forEach(nom => {
+                            const isSelected = userVotes[category] === nom.key;
+                            nomineesList += `
+                                <div class="nominee-item ${isSelected ? 'selected' : ''}" data-category="${category}" data-key="${nom.key}">
+                                    <input type="radio" class="nominee-radio" name="${category}" ${isSelected ? 'checked' : ''}>
+                                    <span class="nominee-name">${nom.nominee}</span>
+                                </div>
+                            `;
+                        });
+
+                        card.innerHTML = `
+                            <div class="category-header">${category}</div>
+                            <div class="category-body">
+                                <div class="nominees-list">${nomineesList}</div>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    }
+                });
+
+                // Add click handlers
+                document.querySelectorAll('.nominee-item').forEach(item => {
+                    item.onclick = function() {
+                        const category = this.getAttribute('data-category');
+                        const key = this.getAttribute('data-key');
+                        userVotes[category] = key;
+                        loadVotingPage();
+                    };
+                });
+            });
         }
 
-        window.selectVote = function(category, nomineeId) {
-            userVotes[category] = nomineeId;
-            loadVotingPage();
-        };
-
-        window.submitAllVotes = async function() {
+        document.getElementById('submit-votes-btn').onclick = async function() {
             const msgDiv = document.getElementById('vote-msg');
+            const btn = this;
             
             if (Object.keys(userVotes).length === 0) {
                 msgDiv.innerHTML = '<div class="error-msg">Please select at least one vote</div>';
@@ -515,15 +532,18 @@
                 return;
             }
 
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
             try {
-                for (const [category, nomineeId] of Object.entries(userVotes)) {
-                    const nomineeRef = doc(db, 'nominations', nomineeId);
-                    await updateDoc(nomineeRef, {
+                for (const [category, key] of Object.entries(userVotes)) {
+                    const nominationRef = ref(database, `nominations/${key}`);
+                    await update(nominationRef, {
                         votes: increment(1)
                     });
                 }
 
-                msgDiv.innerHTML = '<div class="success-msg">Votes submitted successfully!</div>';
+                msgDiv.innerHTML = '<div class="success-msg">✓ Votes submitted successfully!</div>';
                 userVotes = {};
                 setTimeout(() => {
                     msgDiv.innerHTML = '';
@@ -532,6 +552,9 @@
             } catch (error) {
                 msgDiv.innerHTML = '<div class="error-msg">Error submitting votes</div>';
                 console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'SUBMIT ALL VOTES';
             }
         };
 
